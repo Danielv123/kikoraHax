@@ -12,7 +12,7 @@ var Datastore = require('nedb');
 db = {};
 db.items = new Datastore({ filename: 'database/items.db', autoload: true });
 
-fs.stat('foo.txt', function(err, stat) {
+fs.stat('database/solutions.txt', function(err, stat) {
     if(err == null) {
         tasksInJson = JSON.parse(fs.readFileSync("database/solutions.txt", "utf8"));
     } else if(err.code == 'ENOENT') {
@@ -35,20 +35,29 @@ db.items.additem = function(object) {
 			console.log('Item created!');
 		}
 	})*/
-	tasksInJson[object.name] = object.answer;
+	if(object && object.answer && typeof object.answer == "string"){
+		tasksInJson[object.name] = object.answer;
+	} else {
+		console.error("Error: db.items.additem: object.answer is not string.")
+	}
 }
 
 setInterval(function(){
-	fs.writeFile("database/solutions.txt", JSON.stringify(tasksInJson));
+	fs.writeFile("database/solutions.txt", JSON.stringify(tasksInJson), function(){});
 }, 10000)
+
 
 // endpoint to send items to
 app.post("/api/place", function(req, res) {
 	res.header("Access-Control-Allow-Origin", "*");
 	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-	console.log("added: " + req.body.name + " " + req.body.answer);
 	// save items we get
-	db.items.additem(req.body)
+	if(req.body.name && req.body.answer && typeof req.body.answer == "string"){
+		console.log("added: " + req.body.name + " " + req.body.answer);
+		db.items.additem(req.body)
+	} else {
+		console.error("Error: invalid req.body at /api/place")
+	}
 	//db.items.insert(req.body);
 	// Attempt confirming
 	res.send("success");
@@ -60,36 +69,15 @@ app.post("/api/get", function(req, res) {
 	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 	var object = req.body;
 	if(req.body && req.body.name){
-		console.log(req.body)
+		console.log("/api/get " +JSON.stringify(req.body));
 		if(tasksInJson[req.body.name]){
 			res.send(tasksInJson[req.body.name])
+		} else {
+			res.send("No answer");
 		}
-	}
-	
-		/*db.items.findOne({name:req.body.name}), function(err, doc) {
-			res.send(doc);
-			console.log("Responded: " + JSON.stringify(doc));
-			res.end();
-			if(err) throw err;
-		}*/
-	
-	/*if(object && object.name){
-		db.items.findOne({name:object.name}, function (err, doc) {
-			// console.dir(doc);
-			if (err) {
-				console.log('failure count not find ' + object.name);
-			} else {
-				if (doc) {
-					res.send(doc.answer);
-				} else {
-					res.send("No answer");
-				}
-			}
-		})
 	} else {
-		console.log(req.body)
-		res.send("FAILURE IDIOT!")
-	}*/
+		res.send("No name provided");
+	}
 });
 
 var server = app.listen(config.masterPort || 8080, function () {
