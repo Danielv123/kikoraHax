@@ -2,8 +2,19 @@ const express = require("express");
 var nedb = require("nedb");
 var bodyParser = require("body-parser");
 var fs = require("fs");
+const promBundle = require("express-prom-bundle");
+
+const metricsMiddleware = promBundle({
+	includeMethod: true,
+	includePath: true,
+	customLabels: { project_name: "kikoraHax" },
+	promClient: {
+		collectDefaultMetrics: { timeout: 1000 }
+	}
+});
 
 var app = express();
+app.use(metricsMiddleware);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 var config = {};

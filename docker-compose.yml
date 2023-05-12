@@ -1,0 +1,10 @@
+version: "3.3"
+
+services:
+  kikoraHax:
+    image: ghcr.io/danielv123/kikorahax:latest
+    restart: unless-stopped
+    volumes:
+      - /srv/kikoraHax:/app/database
+    ports:
+      - 9088:8080
