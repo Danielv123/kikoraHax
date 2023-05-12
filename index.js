@@ -12,9 +12,9 @@ var Datastore = require('nedb');
 db = {};
 db.items = new Datastore({ filename: 'database/items.db', autoload: true });
 
-fs.stat('database/solutions.txt', function(err, stat) {
+fs.stat('database/solutions.json', function(err, stat) {
     if(err == null) {
-        tasksInJson = JSON.parse(fs.readFileSync("database/solutions.txt", "utf8"));
+        tasksInJson = JSON.parse(fs.readFileSync("database/solutions.json", "utf8"));
     } else if(err.code == 'ENOENT') {
         tasksInJson = {};
     } else {
@@ -43,7 +43,7 @@ db.items.additem = function(object) {
 }
 
 setInterval(function(){
-	fs.writeFile("database/solutions.txt", JSON.stringify(tasksInJson), function(){});
+	fs.writeFile("database/solutions.json", JSON.stringify(tasksInJson), function(){});
 }, 10000)
 
 
