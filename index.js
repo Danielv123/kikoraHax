@@ -57,6 +57,9 @@ setInterval(function(){
 	fs.writeFile("database/solutions.json", JSON.stringify(tasksInJson), function(){});
 }, 10000)
 
+app.get("/", function (req, res) {
+	return res.redirect("https://greasyfork.org/en/scripts/23379-kikora-hax")
+});
 
 // endpoint to send items to
 app.post("/api/place", function(req, res) {
